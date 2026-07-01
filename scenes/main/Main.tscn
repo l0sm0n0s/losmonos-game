@@ -1,3 +1,10 @@
 [gd_scene format=3 uid="uid://bu2vv3yqmmmxr"]
 
 [node name="Main" type="Node2D" unique_id=415157045]
+
+[node name="Label" type="Label" parent="." unique_id=1583248084]
+offset_left = 532.0
+offset_top = 316.0
+offset_right = 702.0
+offset_bottom = 339.0
+text = "Los Monos - prototipo"
