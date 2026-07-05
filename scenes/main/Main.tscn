@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://bu2vv3yqmmmxr"]
 
+[ext_resource type="PackedScene" uid="uid://bqwy8c2611og0" path="res://scenes/player/Player.tscn" id="1_u1xfj"]
+
 [node name="Main" type="Node2D" unique_id=415157045]
 
 [node name="Label" type="Label" parent="." unique_id=1583248084]
@@ -8,3 +10,6 @@ offset_top = 316.0
 offset_right = 702.0
 offset_bottom = 339.0
 text = "Los Monos - prototipo"
+
+[node name="Player" parent="." unique_id=1605815468 instance=ExtResource("1_u1xfj")]
+position = Vector2(627, 462)
