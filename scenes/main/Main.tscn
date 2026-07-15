@@ -2,14 +2,42 @@
 
 [ext_resource type="PackedScene" uid="uid://bqwy8c2611og0" path="res://scenes/player/Player.tscn" id="1_u1xfj"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jhecp"]
+size = Vector2(960, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0najp"]
+size = Vector2(960, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_erc0q"]
+size = Vector2(20, 580)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dbnhs"]
+size = Vector2(20, 580)
+
 [node name="Main" type="Node2D" unique_id=415157045]
 
-[node name="Label" type="Label" parent="." unique_id=1583248084]
-offset_left = 532.0
-offset_top = 316.0
-offset_right = 702.0
-offset_bottom = 339.0
-text = "Los Monos - prototipo"
+[node name="Floor" type="ColorRect" parent="." unique_id=982787557]
+offset_right = 960.0
+offset_bottom = 540.0
+color = Color(0.91553646, 0.70323265, 0.5113548, 1)
+
+[node name="Walls" type="StaticBody2D" parent="." unique_id=607200084]
+
+[node name="TopWall" type="CollisionShape2D" parent="Walls" unique_id=1478045955]
+position = Vector2(480, -10)
+shape = SubResource("RectangleShape2D_jhecp")
+
+[node name="BottomWall" type="CollisionShape2D" parent="Walls" unique_id=601706599]
+position = Vector2(480, 550)
+shape = SubResource("RectangleShape2D_0najp")
+
+[node name="LeftWall" type="CollisionShape2D" parent="Walls" unique_id=884194084]
+position = Vector2(-10, 270)
+shape = SubResource("RectangleShape2D_erc0q")
+
+[node name="RightWall" type="CollisionShape2D" parent="Walls" unique_id=342677548]
+position = Vector2(970, 270)
+shape = SubResource("RectangleShape2D_dbnhs")
 
 [node name="Player" parent="." unique_id=1605815468 instance=ExtResource("1_u1xfj")]
 position = Vector2(627, 462)
