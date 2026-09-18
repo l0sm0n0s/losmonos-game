@@ -1,0 +1,274 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/start_menu.gd" id="1_menu"]
+[ext_resource type="Script" path="res://scripts/player/monkey_art.gd" id="2_worker"]
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+bg_color = Color(0.055, 0.085, 0.11, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22, 0.56, 0.95, 0.5)
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 26
+corner_radius_bottom_left = 26
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 16
+
+[sub_resource type="StyleBoxFlat" id="PrimaryStyle"]
+content_margin_top = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.22, 0.56, 0.95, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.05, 0.17, 0.31, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="PrimaryHoverStyle"]
+content_margin_top = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.36, 0.7, 1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.04, 0.12, 0.24, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="PrimaryPressedStyle"]
+content_margin_top = 14.0
+content_margin_bottom = 10.0
+bg_color = Color(0.12, 0.35, 0.65, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.04, 0.12, 0.24, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="SecondaryHoverStyle"]
+content_margin_top = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.16, 0.24, 0.29, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.36, 0.7, 1, 1)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_right = 11
+corner_radius_bottom_left = 11
+
+[node name="StartMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.16, 0.21, 0.25, 1)
+
+[node name="BackWall" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, 0, 960, 0, 960, 335, 0, 335)
+color = Color(0.2, 0.27, 0.31, 1)
+
+[node name="WallStripe" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, 82, 960, 82, 960, 103, 0, 103)
+color = Color(0.16, 0.46, 0.78, 1)
+
+[node name="Floor" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, 335, 960, 335, 960, 540, 0, 540)
+color = Color(0.29, 0.33, 0.35, 1)
+
+[node name="FloorLine1" type="Line2D" parent="."]
+points = PackedVector2Array(480, 335, 397, 540)
+width = 2.0
+default_color = Color(0.43, 0.47, 0.48, 0.65)
+
+[node name="FloorLine2" type="Line2D" parent="."]
+points = PackedVector2Array(680, 335, 760, 540)
+width = 2.0
+default_color = Color(0.43, 0.47, 0.48, 0.65)
+
+[node name="Shelving" type="Node2D" parent="."]
+
+[node name="FrameLeft" type="Line2D" parent="Shelving"]
+points = PackedVector2Array(654, 128, 654, 370)
+width = 12.0
+default_color = Color(0.12, 0.16, 0.18, 1)
+
+[node name="FrameRight" type="Line2D" parent="Shelving"]
+points = PackedVector2Array(922, 128, 922, 370)
+width = 12.0
+default_color = Color(0.12, 0.16, 0.18, 1)
+
+[node name="ShelfTop" type="Line2D" parent="Shelving"]
+points = PackedVector2Array(646, 144, 930, 144)
+width = 13.0
+default_color = Color(0.56, 0.34, 0.13, 1)
+
+[node name="ShelfMiddle" type="Line2D" parent="Shelving"]
+points = PackedVector2Array(646, 238, 930, 238)
+width = 13.0
+default_color = Color(0.56, 0.34, 0.13, 1)
+
+[node name="ShelfBottom" type="Line2D" parent="Shelving"]
+points = PackedVector2Array(646, 333, 930, 333)
+width = 13.0
+default_color = Color(0.56, 0.34, 0.13, 1)
+
+[node name="Boxes" type="Node2D" parent="Shelving"]
+
+[node name="Box1" type="Polygon2D" parent="Shelving/Boxes"]
+polygon = PackedVector2Array(679, 170, 748, 170, 748, 232, 679, 232)
+color = Color(0.69, 0.44, 0.21, 1)
+
+[node name="Box2" type="Polygon2D" parent="Shelving/Boxes"]
+polygon = PackedVector2Array(764, 181, 829, 181, 829, 232, 764, 232)
+color = Color(0.78, 0.52, 0.27, 1)
+
+[node name="Box3" type="Polygon2D" parent="Shelving/Boxes"]
+polygon = PackedVector2Array(839, 158, 903, 158, 903, 232, 839, 232)
+color = Color(0.63, 0.39, 0.19, 1)
+
+[node name="Conveyor" type="Node2D" parent="."]
+
+[node name="Belt" type="Polygon2D" parent="Conveyor"]
+polygon = PackedVector2Array(451, 385, 922, 385, 922, 448, 451, 448)
+color = Color(0.07, 0.1, 0.12, 1)
+
+[node name="Surface" type="Polygon2D" parent="Conveyor"]
+polygon = PackedVector2Array(459, 393, 914, 393, 914, 438, 459, 438)
+color = Color(0.24, 0.29, 0.31, 1)
+
+[node name="Rail" type="Line2D" parent="Conveyor"]
+points = PackedVector2Array(450, 384, 923, 384)
+width = 7.0
+default_color = Color(0.66, 0.69, 0.68, 1)
+
+[node name="Package1" type="Polygon2D" parent="Conveyor"]
+polygon = PackedVector2Array(523, 360, 584, 360, 584, 414, 523, 414)
+color = Color(0.78, 0.5, 0.23, 1)
+
+[node name="PackageTape" type="Polygon2D" parent="Conveyor"]
+polygon = PackedVector2Array(548, 360, 560, 360, 560, 414, 548, 414)
+color = Color(0.52, 0.76, 0.96, 1)
+
+[node name="WorkerShadow" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(689, 482, 713, 469, 767, 466, 819, 477, 829, 490, 794, 501, 731, 502, 699, 494)
+color = Color(0, 0, 0, 0.3)
+
+[node name="Worker" type="Node2D" parent="."]
+position = Vector2(758, 378)
+scale = Vector2(3, 3)
+script = ExtResource("2_worker")
+uniform_color = Color(0.22, 0.56, 0.95, 1)
+reflective_color = Color(0.7, 0.88, 1, 1)
+
+[node name="MenuPanel" type="PanelContainer" parent="."]
+offset_left = 50.0
+offset_top = 42.0
+offset_right = 430.0
+offset_bottom = 498.0
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="Menu" type="VBoxContainer" parent="MenuPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Company" type="Label" parent="MenuPanel/Menu"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.64, 0.72, 0.76, 1)
+theme_override_font_sizes/font_size = 13
+text = "Almacén Los Monos"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="MenuPanel/Menu"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.7, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.65)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 4
+theme_override_font_sizes/font_size = 42
+text = "Los Monos Game"
+horizontal_alignment = 1
+
+[node name="Divider" type="HSeparator" parent="MenuPanel/Menu"]
+custom_minimum_size = Vector2(0, 9)
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="MenuPanel/Menu"]
+custom_minimum_size = Vector2(306, 59)
+layout_mode = 2
+focus_neighbor_bottom = NodePath("../ExitButton")
+theme_override_colors/font_color = Color(0.03, 0.08, 0.16, 1)
+theme_override_colors/font_hover_color = Color(0.02, 0.06, 0.12, 1)
+theme_override_colors/font_focus_color = Color(0.02, 0.06, 0.12, 1)
+theme_override_colors/font_pressed_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("PrimaryStyle")
+theme_override_styles/hover = SubResource("PrimaryHoverStyle")
+theme_override_styles/pressed = SubResource("PrimaryPressedStyle")
+theme_override_styles/focus = SubResource("PrimaryHoverStyle")
+text = "Iniciar Juego"
+
+[node name="ExitButton" type="Button" parent="MenuPanel/Menu"]
+custom_minimum_size = Vector2(306, 42)
+layout_mode = 2
+focus_neighbor_top = NodePath("../StartButton")
+theme_override_colors/font_color = Color(0.59, 0.67, 0.7, 1)
+theme_override_colors/font_hover_color = Color(0.36, 0.7, 1, 1)
+theme_override_colors/font_focus_color = Color(0.36, 0.7, 1, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/focus = SubResource("SecondaryHoverStyle")
+text = "SALIR"
+flat = true
+
+[node name="Controls" type="Label" parent="."]
+offset_left = 510.0
+offset_top = 505.0
+offset_right = 940.0
+offset_bottom = 530.0
+theme_override_colors/font_color = Color(0.73, 0.78, 0.79, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "Flechas: mover     ·     Espacio: interactuar"
+horizontal_alignment = 2
+
+[node name="Transition" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.035, 0.045, 0)
