@@ -1,7 +1,10 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/start_menu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/player/monkey_art.gd" id="2_worker"]
+[ext_resource type="FontFile" path="res://assets/fonts/pirata-one/PirataOne-Regular.ttf" id="3_title_font"]
+[ext_resource type="Script" path="res://scripts/ui/neon_title.gd" id="4_neon"]
+[ext_resource type="Script" path="res://scripts/warehouse/ceiling_crane.gd" id="5_crane"]
 
 [sub_resource type="StyleBoxFlat" id="PanelStyle"]
 bg_color = Color(0.055, 0.085, 0.11, 0.96)
@@ -159,28 +162,10 @@ color = Color(0.78, 0.52, 0.27, 1)
 polygon = PackedVector2Array(839, 158, 903, 158, 903, 232, 839, 232)
 color = Color(0.63, 0.39, 0.19, 1)
 
-[node name="Conveyor" type="Node2D" parent="."]
-
-[node name="Belt" type="Polygon2D" parent="Conveyor"]
-polygon = PackedVector2Array(451, 385, 922, 385, 922, 448, 451, 448)
-color = Color(0.07, 0.1, 0.12, 1)
-
-[node name="Surface" type="Polygon2D" parent="Conveyor"]
-polygon = PackedVector2Array(459, 393, 914, 393, 914, 438, 459, 438)
-color = Color(0.24, 0.29, 0.31, 1)
-
-[node name="Rail" type="Line2D" parent="Conveyor"]
-points = PackedVector2Array(450, 384, 923, 384)
-width = 7.0
-default_color = Color(0.66, 0.69, 0.68, 1)
-
-[node name="Package1" type="Polygon2D" parent="Conveyor"]
-polygon = PackedVector2Array(523, 360, 584, 360, 584, 414, 523, 414)
-color = Color(0.78, 0.5, 0.23, 1)
-
-[node name="PackageTape" type="Polygon2D" parent="Conveyor"]
-polygon = PackedVector2Array(548, 360, 560, 360, 560, 414, 548, 414)
-color = Color(0.52, 0.76, 0.96, 1)
+[node name="CeilingCrane" type="Node2D" parent="."]
+position = Vector2(375, 0)
+script = ExtResource("5_crane")
+showcase = true
 
 [node name="WorkerShadow" type="Polygon2D" parent="."]
 polygon = PackedVector2Array(689, 482, 713, 469, 767, 466, 819, 477, 829, 490, 794, 501, 731, 502, 699, 494)
@@ -218,9 +203,11 @@ theme_override_colors/font_color = Color(0.36, 0.7, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.65)
 theme_override_constants/shadow_offset_x = 3
 theme_override_constants/shadow_offset_y = 4
-theme_override_font_sizes/font_size = 42
+theme_override_fonts/font = ExtResource("3_title_font")
+theme_override_font_sizes/font_size = 54
 text = "Los Monos Game"
 horizontal_alignment = 1
+script = ExtResource("4_neon")
 
 [node name="Divider" type="HSeparator" parent="MenuPanel/Menu"]
 custom_minimum_size = Vector2(0, 9)

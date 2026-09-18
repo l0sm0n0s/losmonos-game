@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 @export var speed: float = 250.0
 @export var acceleration: float = 1400.0
+@export var movement_bounds := Rect2(16, 24, 928, 476)
 
 @onready var monkey_art: Node2D = $MonkeyArt
 @onready var carry_point: Marker2D = $CarryPoint
@@ -23,11 +24,18 @@ func _physics_process(delta: float) -> void:
 
 	velocity = velocity.move_toward(direction * speed, acceleration * delta)
 	move_and_slide()
+	position = position.clamp(movement_bounds.position, movement_bounds.end)
 	monkey_art.set_movement(direction)
 
 	if not direction.is_zero_approx():
 		facing_direction = direction.normalized()
 		carry_point.position = facing_direction * 38.0 + Vector2(0.0, -4.0)
+
+
+func set_controls_enabled(enabled: bool) -> void:
+	set_physics_process(enabled)
+	velocity = Vector2.ZERO
+	monkey_art.set_movement(Vector2.ZERO)
 
 
 func _draw() -> void:

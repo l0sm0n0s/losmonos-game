@@ -1,0 +1,9 @@
+[gd_resource type="Theme" load_steps=3 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/poppins/Poppins-Regular.ttf" id="1_regular"]
+[ext_resource type="FontFile" path="res://assets/fonts/poppins/Poppins-SemiBold.ttf" id="2_semibold"]
+
+[resource]
+default_font = ExtResource("1_regular")
+default_font_size = 16
+Button/fonts/font = ExtResource("2_semibold")
