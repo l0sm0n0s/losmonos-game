@@ -1,28 +1,46 @@
 extends Node2D
 
 
+func _ready() -> void:
+	_add_solid(Rect2(16, 432, 928, 32))
+	_add_solid(Rect2(-16, 80, 32, 384))
+	_add_solid(Rect2(944, 80, 32, 384))
+
+
+func _add_solid(box: Rect2) -> void:
+	var body := StaticBody2D.new()
+	body.collision_layer = 1
+	body.collision_mask = 0
+	var collider := CollisionShape2D.new()
+	var shape := RectangleShape2D.new()
+	shape.size = box.size
+	collider.shape = shape
+	body.position = box.get_center()
+	body.add_child(collider)
+	add_child(body)
+
+
 func _draw() -> void:
 	draw_rect(Rect2(0, 0, 960, 540), Color("101e2c"))
-	draw_rect(Rect2(32, 85, 618, 155), Color("203649"))
-	for x in range(48, 650, 50):
-		draw_line(Vector2(x, 85), Vector2(x, 240), Color("2a4256"), 1)
-	draw_line(Vector2(32, 85), Vector2(650, 85), Color("398ed9"), 5)
-	draw_rect(Rect2(32, 242, 618, 201), Color("354654"))
-	for y in range(248, 445, 48):
-		draw_line(Vector2(32, y), Vector2(650, y), Color("415260"), 1)
-	for x in range(32, 651, 78):
-		draw_line(Vector2(x, 242), Vector2(x, 443), Color("415260"), 1)
-	for x in [140, 300, 460]:
-		var pad := Rect2(x - 52, 266, 104, 90)
-		draw_rect(pad, Color(0.24, 0.54, 0.8, 0.14))
-		draw_rect(pad, Color("6ba6cf"), false, 1)
-		for corner in [pad.position, pad.position + Vector2(84, 0), pad.position + Vector2(0, 90), pad.end - Vector2(20, 0)]:
-			draw_line(corner, corner + Vector2(20, 0), Color("9ed7ff"), 3)
-	draw_rect(Rect2(575, 346, 78, 91), Color(0.23, 0.6, 1, 0.3))
-	draw_rect(Rect2(575, 346, 78, 91), Color("8acaff"), false, 2)
-	draw_line(Vector2(589, 336), Vector2(628, 336), Color("8acaff"), 3)
-	draw_line(Vector2(628, 336), Vector2(618, 327), Color("8acaff"), 3)
-	draw_rect(Rect2(680, 120, 232, 308), Color("193144"))
-	draw_line(Vector2(685, 120), Vector2(685, 443), Color("398ed9"), 8)
-	draw_line(Vector2(908, 120), Vector2(908, 443), Color("398ed9"), 8)
-	draw_rect(Rect2(680, 422, 232, 10), Color("265b87"))
+	draw_rect(Rect2(16, 85, 928, 347), Color("1b3042"))
+	for x in range(32, 944, 64):
+		draw_line(Vector2(x, 85), Vector2(x, 430), Color("243b4e"), 1)
+	for x in [32, 240, 912]:
+		draw_rect(Rect2(x, 85, 8, 347), Color("2d4b62"))
+		draw_line(Vector2(x, 85), Vector2(x, 432), Color("406987"), 1)
+	# Loading bay and the storage lanes share the same physical floor.
+	draw_rect(Rect2(64, 226, 144, 206), Color("152939"))
+	for y in range(234, 430, 13):
+		draw_line(Vector2(68, y), Vector2(204, y), Color("263d4f"), 2)
+	draw_rect(Rect2(56, 414, 160, 18), Color("286499"))
+	for x in range(58, 212, 16):
+		draw_line(Vector2(x, 416), Vector2(x + 10, 429), Color("74b4e4"), 3)
+	draw_rect(Rect2(16, 434, 928, 26), Color("2b4559"))
+	draw_line(Vector2(16, 434), Vector2(944, 434), Color("589bcc"), 3)
+	for x in range(24, 940, 48):
+		draw_circle(Vector2(x, 447), 2, Color("162938"))
+	# Three low-key warehouse lights, without competing with the action.
+	for x in [336, 560, 784]:
+		draw_line(Vector2(x, 85), Vector2(x, 146), Color("35546b"), 2)
+		draw_rect(Rect2(x - 35, 146, 70, 7), Color("6f9ebf"))
+		draw_line(Vector2(x - 28, 154), Vector2(x + 28, 154), Color("c3eaff"), 3)

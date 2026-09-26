@@ -1,75 +1,117 @@
-extends Node2D
+extends CharacterBody2D
 
 const Shapes = preload("res://scripts/packages/package_shapes.gd")
-enum State { FALLING, READY, CARRIED }
+const CELL_SIZE := 32.0
+enum State { FALLING, READY, CARRIED, PLACED }
 
 var kind := 0
 var number := 1
-var delivery_slot := -1
+var turns := 0
 var state := State.FALLING
-var _height := 0.0
-var _fall_speed := 0.0
+var grid_cell := Vector2i(-1, -1)
+var highlighted := false
 var _carrier: Marker2D
-var _landing_tween: Tween
-var _font: Font = preload("res://assets/fonts/poppins/Poppins-SemiBold.ttf")
+var _shapes: Array[CollisionShape2D] = []
 
 
-func setup(shape_kind: int, serial: int, release_point: Vector2, target: Vector2, slot: int) -> void:
+func setup(shape_kind: int, serial: int, release_point: Vector2) -> void:
 	kind = shape_kind
 	number = serial
-	delivery_slot = slot
-	global_position = target
-	_height = maxf(0, target.y - release_point.y)
+	position = release_point - Vector2(Shapes.bounds(cells())) * CELL_SIZE * 0.5
+	_rebuild_collision()
 	state = State.FALLING
-	queue_redraw()
 
 
-func _process(delta: float) -> void:
-	if state == State.FALLING:
-		_fall_speed += 590.0 * delta
-		_height = maxf(0, _height - _fall_speed * delta)
-		if is_zero_approx(_height):
-			state = State.READY
-			_landing_tween = create_tween()
-			_landing_tween.tween_property(self, "scale", Vector2(1.12, 0.88), 0.07)
-			_landing_tween.tween_property(self, "scale", Vector2.ONE, 0.16)
-	elif state == State.CARRIED and is_instance_valid(_carrier):
-		global_position = global_position.lerp(_carrier.global_position, minf(delta * 20.0, 1.0))
+func cells() -> Array[Vector2i]:
+	return Shapes.cells(kind, turns)
+
+
+func _physics_process(delta: float) -> void:
+	if state == State.CARRIED:
+		if is_instance_valid(_carrier):
+			global_position = _carrier.global_position - Vector2(Shapes.bounds(cells())) * CELL_SIZE * scale * Vector2(0.5, 1.0)
+	elif state != State.PLACED:
+		velocity.y = minf(velocity.y + 1250.0 * delta, 850.0)
+		move_and_slide()
+		state = State.READY if is_on_floor() else State.FALLING
 	queue_redraw()
 
 
 func is_available() -> bool:
-	return state == State.READY
+	return state in [State.READY, State.PLACED]
 
 
 func pick_up(carrier: Marker2D) -> void:
-	if not is_available():
-		return
-	if is_instance_valid(_landing_tween):
-		_landing_tween.kill()
-	scale = Vector2.ONE
 	_carrier = carrier
 	state = State.CARRIED
-	delivery_slot = -1
-	z_index = 20
+	velocity = Vector2.ZERO
+	collision_layer = 0
+	collision_mask = 0
+	scale = Vector2.ONE * 0.62
+	z_index = 10
 
 
-func drop(world_position: Vector2) -> void:
+func rotate_piece(direction: int) -> void:
+	if state != State.CARRIED:
+		return
+	turns = posmod(turns + direction, 4)
+	queue_redraw()
+
+
+func place_at(world_position: Vector2, cell: Vector2i) -> void:
 	_carrier = null
-	state = State.READY
-	global_position = world_position.clamp(Vector2(94, 280), Vector2(550, 395))
+	state = State.PLACED
+	scale = Vector2.ONE
+	global_position = world_position
+	grid_cell = cell
+	velocity = Vector2.ZERO
+	_rebuild_collision()
+	collision_layer = 2
+	collision_mask = 1 | 2
 	z_index = 2
+	queue_redraw()
+
+
+func drop_at(world_position: Vector2) -> void:
+	place_at(world_position, Vector2i(-1, -1))
+	state = State.FALLING
+	collision_mask = 7
+
+
+func world_cells() -> Array[Rect2]:
+	var result: Array[Rect2] = []
+	for cell in cells():
+		result.append(Rect2(global_position + Vector2(cell) * CELL_SIZE, Vector2.ONE * CELL_SIZE))
+	return result
+
+
+func distance_to(point: Vector2) -> float:
+	var distance := INF
+	for box in world_cells():
+		var closest := point.clamp(box.position, box.end)
+		distance = minf(distance, point.distance_to(closest))
+	return distance
+
+
+func _rebuild_collision() -> void:
+	for collider in _shapes:
+		remove_child(collider)
+		collider.queue_free()
+	_shapes.clear()
+	for cell in cells():
+		var collider := CollisionShape2D.new()
+		var box := RectangleShape2D.new()
+		box.size = Vector2.ONE * CELL_SIZE
+		collider.shape = box
+		collider.position = (Vector2(cell) + Vector2.ONE * 0.5) * CELL_SIZE
+		add_child(collider)
+		_shapes.append(collider)
+	queue_redraw()
 
 
 func _draw() -> void:
-	var shape := Shapes.cells(kind)
-	var size := Vector2(Shapes.bounds(shape)) * 18.0
-	var shadow_alpha := 0.28 * (1.0 - minf(_height / 220.0, 0.65))
-	draw_set_transform(Vector2(0, size.y * 0.5), 0, Vector2(1.5, 0.3))
-	draw_circle(Vector2.ZERO, maxf(14, size.x * 0.38), Color(0, 0, 0, shadow_alpha))
-	draw_set_transform(Vector2(0, -_height))
-	for cell in shape:
-		Shapes.draw_crate(self, Rect2(Vector2(cell) * 18.0 - size * 0.5, Vector2(18, 18)))
-	if state == State.READY:
-		draw_string(_font, Vector2(-15, size.y * 0.5 + 16), "%02d · %s" % [number, Shapes.NAMES[kind]], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("cee9ff"))
-	draw_set_transform(Vector2.ZERO)
+	for cell in cells():
+		var box := Rect2(Vector2(cell) * CELL_SIZE, Vector2.ONE * CELL_SIZE)
+		Shapes.draw_crate(self, box)
+		if highlighted and is_available():
+			draw_rect(box.grow(-1), Color("b8e6ff"), false, 2)

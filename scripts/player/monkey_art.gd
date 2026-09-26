@@ -13,6 +13,8 @@ var _moving := false
 var _elapsed := 0.0
 var _facing := 1.0
 var _base_y := 0.0
+var _carrying := false
+var _airborne := false
 
 
 func _ready() -> void:
@@ -28,21 +30,33 @@ func set_movement(direction: Vector2) -> void:
 
 func _process(delta: float) -> void:
 	_elapsed += delta
-	var target_bob := _base_y + (sin(_elapsed * 11.0) * 1.8 if _moving else 0.0)
+	var walking := _moving and not _airborne
+	var target_bob := _base_y + (sin(_elapsed * 11.0) * 1.8 if walking else 0.0)
 	position.y = lerpf(position.y, target_bob, minf(delta * 14.0, 1.0))
-	rotation = lerpf(rotation, sin(_elapsed * 11.0) * 0.045 if _moving else 0.0, minf(delta * 12.0, 1.0))
+	rotation = lerpf(rotation, sin(_elapsed * 11.0) * 0.045 if walking else 0.0, minf(delta * 12.0, 1.0))
 	queue_redraw()
+
+
+func set_pose(carrying: bool, airborne: bool) -> void:
+	_carrying = carrying
+	_airborne = airborne
 
 
 func _draw() -> void:
 	# Silueta humanoide: cola, brazos y piernas.
 	draw_arc(Vector2(-12.0 * _facing, 12.0), 21.0, 1.3, 4.7, 24, DARK_FUR, 7.0, true)
-	draw_line(Vector2(-12.0, 9.0), Vector2(-22.0, 24.0), FUR, 7.0, true)
-	draw_line(Vector2(12.0, 9.0), Vector2(22.0, 24.0), FUR, 7.0, true)
-	draw_line(Vector2(-7.0, 25.0), Vector2(-10.0, 38.0), UNIFORM_DARK, 9.0, true)
-	draw_line(Vector2(7.0, 25.0), Vector2(10.0, 38.0), UNIFORM_DARK, 9.0, true)
-	draw_line(Vector2(-13.0, 38.0), Vector2(-7.0, 38.0), DARK_FUR, 5.0, true)
-	draw_line(Vector2(7.0, 38.0), Vector2(13.0, 38.0), DARK_FUR, 5.0, true)
+	if _carrying:
+		for side in [-1, 1]:
+			draw_polyline(PackedVector2Array([Vector2(side * 12, 9), Vector2(side * 28, -12), Vector2(side * 19, -34)]), FUR, 7, true)
+			draw_circle(Vector2(side * 19, -34), 4, FACE)
+	else:
+		draw_line(Vector2(-12, 9), Vector2(-22, 24), FUR, 7, true)
+		draw_line(Vector2(12, 9), Vector2(22, 24), FUR, 7, true)
+	var foot_y := 31.0 if _airborne else 38.0
+	draw_line(Vector2(-7, 25), Vector2(-10, foot_y), UNIFORM_DARK, 9, true)
+	draw_line(Vector2(7, 25), Vector2(10, foot_y), UNIFORM_DARK, 9, true)
+	draw_line(Vector2(-13, foot_y), Vector2(-7, foot_y), DARK_FUR, 5, true)
+	draw_line(Vector2(7, foot_y), Vector2(13, foot_y), DARK_FUR, 5, true)
 
 	# Torso con uniforme y chaleco de seguridad.
 	draw_circle(Vector2(0.0, 13.0), 18.0, FUR)

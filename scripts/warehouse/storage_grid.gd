@@ -1,14 +1,16 @@
 extends Node2D
 
 const Shapes = preload("res://scripts/packages/package_shapes.gd")
-const COLUMNS := 6
-const ROWS := 8
+const COLUMNS := 20
+const ROWS := 6
 const CELL_SIZE := 32.0
 
+# Cells contain package IDs. Finished rows stay in the warehouse as platforms.
 var grid: Array = []
 var _preview: Array[Vector2i] = []
-var _preview_column := 0
-var _flash_rows: Array[int] = []
+var _preview_cell := Vector2i.ZERO
+var _preview_valid := false
+var _completed: Array[int] = []
 var _flash := 0.0
 
 
@@ -22,7 +24,7 @@ func _init() -> void:
 
 func _process(delta: float) -> void:
 	if _flash > 0:
-		_flash = maxf(0, _flash - delta * 1.8)
+		_flash = maxf(0, _flash - delta)
 		queue_redraw()
 
 
@@ -30,83 +32,133 @@ func fits(shape: Array[Vector2i], column: int, row: int) -> bool:
 	for cell in shape:
 		var x := column + cell.x
 		var y := row + cell.y
-		if x < 0 or x >= COLUMNS or y < 0 or y >= ROWS:
-			return false
-		if grid[y][x] != 0:
+		if x < 0 or x >= COLUMNS or y < 0 or y >= ROWS or grid[y][x] != 0:
 			return false
 	return true
 
 
-func landing_row(shape: Array[Vector2i], column: int) -> int:
-	if not fits(shape, column, 0):
-		return -1
-	var row := 0
-	while fits(shape, column, row + 1):
-		row += 1
-	return row
-
-
-func has_space_for(kind: int) -> bool:
-	for turns in range(4):
-		for column in range(COLUMNS):
-			if landing_row(Shapes.cells(kind, turns), column) >= 0:
-				return true
+func supported(shape: Array[Vector2i], column: int, row: int) -> bool:
+	for cell in shape:
+		var below := Vector2i(column, row) + cell + Vector2i.DOWN
+		if below.y == ROWS:
+			return true
+		if below.x >= 0 and below.x < COLUMNS and below.y >= 0 and below.y < ROWS and grid[below.y][below.x] != 0:
+			return true
 	return false
 
 
-func place(shape: Array[Vector2i], column: int, kind: int) -> int:
-	var row := landing_row(shape, column)
-	if row < 0:
-		return -1
+func resting_row(shape: Array[Vector2i], column: int, feet_y: float) -> int:
+	# Search from the floor up: the worker can also fill reachable side gaps.
+	for row in range(ROWS - Shapes.bounds(shape).y, -1, -1):
+		var bottom_y := global_position.y + (row + Shapes.bounds(shape).y) * CELL_SIZE
+		if absf(bottom_y - feet_y) <= 104 and fits(shape, column, row) and supported(shape, column, row):
+			return row
+	return -1
+
+
+func place(shape: Array[Vector2i], column: int, row: int, package_id: int) -> bool:
+	if package_id <= 0 or not fits(shape, column, row) or not supported(shape, column, row):
+		return false
 	for cell in shape:
-		grid[row + cell.y][column + cell.x] = kind + 1
-	var remaining: Array = []
-	_flash_rows.clear()
+		grid[row + cell.y][column + cell.x] = package_id
+	_refresh_completed()
+	return true
+
+
+func can_remove(package_id: int) -> bool:
+	# Trace support back to the floor; mutually interlocked groups cannot float.
+	var grounded := {}
+	var supports := {}
+	var remaining_ids := {}
+	for y in range(ROWS):
+		for x in range(COLUMNS):
+			var id: int = grid[y][x]
+			if id == 0 or id == package_id:
+				continue
+			remaining_ids[id] = true
+			if y == ROWS - 1:
+				grounded[id] = true
+			else:
+				var below: int = grid[y + 1][x]
+				if below != 0 and below != id and below != package_id:
+					if not supports.has(id):
+						supports[id] = []
+					supports[id].append(below)
+	var changed := true
+	while changed:
+		changed = false
+		for id: int in supports:
+			if grounded.has(id):
+				continue
+			for below: int in supports[id]:
+				if grounded.has(below):
+					grounded[id] = true
+					changed = true
+					break
+	for id: int in remaining_ids:
+		if not grounded.has(id):
+			return false
+	return true
+
+
+func remove_package(package_id: int) -> bool:
+	if not can_remove(package_id):
+		return false
+	for row: Array in grid:
+		for x in range(COLUMNS):
+			if row[x] == package_id:
+				row[x] = 0
+	_refresh_completed()
+	return true
+
+
+func completed_rows() -> int:
+	return _completed.size()
+
+
+func _refresh_completed() -> void:
+	var previous := _completed.size()
+	_completed.clear()
 	for y in range(ROWS):
 		if not grid[y].has(0):
-			_flash_rows.append(y)
-		else:
-			remaining.append(grid[y].duplicate())
-	var cleared := _flash_rows.size()
-	for _row in range(cleared):
-		var empty_row: Array[int] = []
-		empty_row.resize(COLUMNS)
-		empty_row.fill(0)
-		remaining.push_front(empty_row)
-	grid = remaining
-	_flash = 1.0 if cleared > 0 else 0.0
-	clear_preview()
-	return cleared
+			_completed.append(y)
+	if _completed.size() > previous:
+		_flash = 1.0
+	queue_redraw()
 
 
-func show_preview(shape: Array[Vector2i], column: int) -> void:
+func show_preview(shape: Array[Vector2i], cell: Vector2i, valid: bool) -> void:
 	_preview = shape
-	_preview_column = column
+	_preview_cell = cell
+	_preview_valid = valid
 	queue_redraw()
 
 
 func clear_preview() -> void:
-	_preview.clear()
+	_preview = []
 	queue_redraw()
 
 
 func _draw() -> void:
 	var size := Vector2(COLUMNS, ROWS) * CELL_SIZE
-	draw_rect(Rect2(Vector2(-10, -10), size + Vector2(20, 20)), Color("102436"))
 	for y in range(ROWS):
-		for x in range(COLUMNS):
-			var box := Rect2(Vector2(x, y) * CELL_SIZE, Vector2.ONE * CELL_SIZE)
-			draw_rect(box.grow(-1), Color("213d50") if y % 2 == 0 else Color("1c3547"))
-			if grid[y][x] > 0:
-				Shapes.draw_crate(self, box)
-	if not _preview.is_empty():
-		var row := landing_row(_preview, _preview_column)
-		for cell in _preview:
-			var box := Rect2(Vector2(cell + Vector2i(_preview_column, maxi(row, 0))) * CELL_SIZE, Vector2.ONE * CELL_SIZE)
-			if row >= 0:
-				Shapes.draw_crate(self, box, true)
-			else:
-				draw_rect(box.grow(-2), Color(1, 0.35, 0.3, 0.65))
-	for row in _flash_rows:
-		draw_rect(Rect2(Vector2(0, row * CELL_SIZE), Vector2(size.x, CELL_SIZE)), Color(0.8, 0.95, 1, _flash * 0.75))
-	draw_rect(Rect2(Vector2(-3, -3), size + Vector2(6, 6)), Color("70bfff"), false, 2)
+		var row_box := Rect2(Vector2(0, y * CELL_SIZE), Vector2(size.x, CELL_SIZE))
+		if y in _completed:
+			draw_rect(row_box, Color(0.32, 0.7, 1, 0.10 + _flash * 0.18))
+			draw_line(row_box.position, row_box.position + Vector2(size.x, 0), Color("62baff"), 2)
+		else:
+			draw_line(row_box.position, row_box.position + Vector2(size.x, 0), Color(0.45, 0.7, 0.9, 0.12), 1)
+	for x in range(COLUMNS + 1):
+		draw_line(Vector2(x * CELL_SIZE, 0), Vector2(x * CELL_SIZE, size.y), Color(0.45, 0.7, 0.9, 0.09), 1)
+	draw_line(Vector2(0, size.y), size, Color("75c7ff"), 3)
+	for x in [0.0, size.x]:
+		draw_line(Vector2(x, size.y - 12), Vector2(x, size.y + 6), Color("b7e7ff"), 3)
+	for y in range(ROWS):
+		draw_circle(Vector2(size.x + 12, (y + 0.5) * CELL_SIZE), 3, Color("85d0ff") if y in _completed else Color("34536b"))
+	for cell in _preview:
+		var box := Rect2(Vector2(cell + _preview_cell) * CELL_SIZE, Vector2.ONE * CELL_SIZE)
+		if _preview_valid:
+			Shapes.draw_crate(self, box, true)
+		else:
+			draw_rect(box.grow(-2), Color(1, 0.35, 0.36, 0.16))
+			draw_rect(box.grow(-2), Color(1, 0.45, 0.45, 0.8), false, 1.5)

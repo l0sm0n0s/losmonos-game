@@ -38,45 +38,39 @@ script = ExtResource("4_warehouse")
 
 [node name="CeilingCrane" type="Node2D" parent="Warehouse"]
 script = ExtResource("5_crane")
+rail_width = 833.0
+box_size = 32.0
+trolley_x = 820.0
 
 [node name="StorageGrid" type="Node2D" parent="Warehouse"]
-position = Vector2(700, 160)
+position = Vector2(256, 240)
 script = ExtResource("6_grid")
 
 [node name="Reception" type="Label" parent="Warehouse"]
-offset_left = 36.0
-offset_top = 216.0
-offset_right = 100.0
-offset_bottom = 239.0
+offset_left = 56.0
+offset_top = 207.0
+offset_right = 216.0
+offset_bottom = 227.0
 theme_override_colors/font_color = Color(0.66, 0.81, 0.92, 1)
 theme_override_font_sizes/font_size = 10
-text = "RECEPCIÓN"
-
-[node name="RackTitle" type="Label" parent="Warehouse"]
-offset_left = 694.0
-offset_top = 126.0
-offset_right = 900.0
-offset_bottom = 153.0
-theme_override_colors/font_color = Color(0.66, 0.84, 1, 1)
-theme_override_font_sizes/font_size = 17
-text = "ESTANTERÍA"
+text = "↓ DESCARGA DE PAQUETES"
 horizontal_alignment = 1
 
-[node name="StationLabel" type="Label" parent="Warehouse"]
-offset_left = 577.0
-offset_top = 352.0
-offset_right = 651.0
-offset_bottom = 369.0
-theme_override_colors/font_color = Color(0.7, 0.87, 1, 1)
-theme_override_font_sizes/font_size = 9
-text = "ORGANIZAR"
+[node name="StorageTitle" type="Label" parent="Warehouse"]
+offset_left = 256.0
+offset_top = 200.0
+offset_right = 896.0
+offset_bottom = 223.0
+theme_override_colors/font_color = Color(0.66, 0.84, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "ZONA DE ACOMODO  ·  LLENA CADA FILA DE EXTREMO A EXTREMO"
 horizontal_alignment = 1
 
 [node name="Packages" type="Node2D" parent="."]
 
 [node name="Player" parent="." unique_id=1605815468 instance=ExtResource("1_player")]
-position = Vector2(516, 388)
-movement_bounds = Rect2(66, 260, 570, 160)
+position = Vector2(232, 432)
+z_index = 5
 
 [node name="SpawnTimer" type="Timer" parent="."]
 wait_time = 2.8
@@ -130,38 +124,28 @@ theme_override_font_sizes/font_size = 11
 text = "POLEA EN MARCHA"
 horizontal_alignment = 2
 
-[node name="BoardHint" type="Label" parent="HUD"]
-offset_left = 662.0
-offset_top = 433.0
-offset_right = 932.0
-offset_bottom = 465.0
-theme_override_colors/font_color = Color(0.61, 0.79, 0.93, 1)
-theme_override_font_sizes/font_size = 11
-text = "Completa filas para despachar cajas"
-horizontal_alignment = 1
-autowrap_mode = 2
-
 [node name="Controls" type="Label" parent="HUD"]
-offset_left = 38.0
-offset_top = 446.0
-offset_right = 650.0
-offset_bottom = 466.0
+offset_left = 24.0
+offset_top = 460.0
+offset_right = 936.0
+offset_bottom = 484.0
 theme_override_colors/font_color = Color(0.64, 0.74, 0.83, 1)
-theme_override_font_sizes/font_size = 11
-text = "Flechas: mover al mono   ·   Espacio: recoger / organizar   ·   R: reiniciar   ·   Esc: menú"
+theme_override_font_sizes/font_size = 12
+text = "← → / A D: caminar    ·    Espacio: saltar    ·    F: recoger / colocar    ·    Q / E: girar    ·    R: reiniciar    ·    Esc: menú"
+horizontal_alignment = 1
 
 [node name="Prompt" type="PanelContainer" parent="HUD"]
 offset_left = 24.0
-offset_top = 478.0
+offset_top = 488.0
 offset_right = 936.0
-offset_bottom = 526.0
+offset_bottom = 532.0
 theme_override_styles/panel = SubResource("HudStyle")
 
 [node name="Text" type="Label" parent="HUD/Prompt"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.93, 1, 1)
-theme_override_font_sizes/font_size = 14
-text = "Recoge las cajas de recepción y completa 4 filas en la estantería"
+theme_override_font_sizes/font_size = 13
+text = "Llena 4 filas sin huecos. Salta sobre los paquetes para continuar apilando."
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -216,7 +200,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.77, 0.85, 0.91, 1)
 theme_override_font_sizes/font_size = 14
-text = "Completaste 4 filas. El almacén está en orden."
+text = "Completaste 4 filas sin huecos."
 horizontal_alignment = 1
 
 [node name="Restart" type="Label" parent="HUD/ResultOverlay/Card/Content"]
