@@ -241,13 +241,13 @@ text = "SALIR"
 flat = true
 
 [node name="Controls" type="Label" parent="."]
-offset_left = 510.0
+offset_left = 260.0
 offset_top = 505.0
 offset_right = 940.0
 offset_bottom = 530.0
 theme_override_colors/font_color = Color(0.73, 0.78, 0.79, 0.8)
 theme_override_font_sizes/font_size = 13
-text = "← → mover   ·   Espacio saltar   ·   F recoger"
+text = "← → mover   ·   Espacio saltar   ·   F recoger   ·   F11 pantalla completa"
 horizontal_alignment = 2
 
 [node name="Transition" type="ColorRect" parent="."]

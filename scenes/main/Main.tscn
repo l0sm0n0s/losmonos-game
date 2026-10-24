@@ -38,7 +38,7 @@ script = ExtResource("4_warehouse")
 
 [node name="CeilingCrane" type="Node2D" parent="Warehouse"]
 script = ExtResource("5_crane")
-rail_width = 833.0
+rail_width = 928.0
 box_size = 32.0
 trolley_x = 820.0
 
@@ -53,7 +53,7 @@ offset_right = 216.0
 offset_bottom = 227.0
 theme_override_colors/font_color = Color(0.66, 0.81, 0.92, 1)
 theme_override_font_sizes/font_size = 10
-text = "↓ DESCARGA DE PAQUETES"
+text = "↓ DESCARGA ALEATORIA"
 horizontal_alignment = 1
 
 [node name="StorageTitle" type="Label" parent="Warehouse"]
@@ -63,7 +63,7 @@ offset_right = 896.0
 offset_bottom = 223.0
 theme_override_colors/font_color = Color(0.66, 0.84, 1, 1)
 theme_override_font_sizes/font_size = 12
-text = "ZONA DE ACOMODO  ·  LLENA CADA FILA DE EXTREMO A EXTREMO"
+text = "MUEVE LAS PIEZAS Y DESPEJA EL RECORRIDO DEL BRAZO"
 horizontal_alignment = 1
 
 [node name="Packages" type="Node2D" parent="."]
@@ -73,8 +73,8 @@ position = Vector2(232, 432)
 z_index = 5
 
 [node name="SpawnTimer" type="Timer" parent="."]
-wait_time = 2.8
-one_shot = true
+wait_time = 5.0
+one_shot = false
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -88,8 +88,8 @@ theme_override_styles/panel = SubResource("HudStyle")
 [node name="Counter" type="Label" parent="HUD/TopBar"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.52, 0.79, 1, 1)
-theme_override_font_sizes/font_size = 21
-text = "FILAS  0 / 4"
+theme_override_font_sizes/font_size = 16
+text = "000 s · 0 piezas"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -111,7 +111,7 @@ offset_right = 932.0
 offset_bottom = 43.0
 theme_override_colors/font_color = Color(0.83, 0.9, 0.95, 1)
 theme_override_font_sizes/font_size = 14
-text = "01 · ORDEN EN ALTURA"
+text = "01 · SOBREVIVE AL TURNO"
 horizontal_alignment = 2
 
 [node name="MachineStatus" type="Label" parent="HUD"]
@@ -121,7 +121,7 @@ offset_right = 932.0
 offset_bottom = 68.0
 theme_override_colors/font_color = Color(0.51, 0.77, 0.98, 1)
 theme_override_font_sizes/font_size = 11
-text = "POLEA EN MARCHA"
+text = "BRAZO EN MARCHA"
 horizontal_alignment = 2
 
 [node name="Controls" type="Label" parent="HUD"]
@@ -131,7 +131,7 @@ offset_right = 936.0
 offset_bottom = 484.0
 theme_override_colors/font_color = Color(0.64, 0.74, 0.83, 1)
 theme_override_font_sizes/font_size = 12
-text = "← → / A D: caminar    ·    Espacio: saltar    ·    F: recoger / colocar    ·    Q / E: girar    ·    R: reiniciar    ·    Esc: menú"
+text = "← → / A D: mover  ·  Espacio: saltar  ·  F: recoger / soltar  ·  Q / E: girar  ·  R: reiniciar  ·  Esc: menú  ·  F11: pantalla completa"
 horizontal_alignment = 1
 
 [node name="Prompt" type="PanelContainer" parent="HUD"]
@@ -145,7 +145,7 @@ theme_override_styles/panel = SubResource("HudStyle")
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.93, 1, 1)
 theme_override_font_sizes/font_size = 13
-text = "Llena 4 filas sin huecos. Salta sobre los paquetes para continuar apilando."
+text = "Despeja el recorrido: si el brazo o su carga chocan con una pieza anterior, pierdes."
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -185,7 +185,7 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53, 0.79, 1, 1)
 theme_override_font_sizes/font_size = 18
-text = "TURNO COMPLETADO"
+text = "TURNO INTERRUMPIDO"
 horizontal_alignment = 1
 
 [node name="Heading" type="Label" parent="HUD/ResultOverlay/Card/Content"]
@@ -193,19 +193,19 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.88, 0.96, 1, 1)
 theme_override_fonts/font = ExtResource("3_title_font")
 theme_override_font_sizes/font_size = 42
-text = "¡Buen trabajo!"
+text = "¡El brazo ha chocado!"
 horizontal_alignment = 1
 
 [node name="Message" type="Label" parent="HUD/ResultOverlay/Card/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.77, 0.85, 0.91, 1)
 theme_override_font_sizes/font_size = 14
-text = "Completaste 4 filas sin huecos."
+text = "El brazo chocó con una pieza que ya había descargado."
 horizontal_alignment = 1
 
 [node name="Restart" type="Label" parent="HUD/ResultOverlay/Card/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.56, 0.76, 0.94, 1)
 theme_override_font_sizes/font_size = 13
-text = "Enter / R: repetir actividad    ·    Esc: menú"
+text = "Enter / R: repetir actividad    ·    Esc: menú    ·    F11: pantalla completa"
 horizontal_alignment = 1

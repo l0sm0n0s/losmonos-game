@@ -140,21 +140,6 @@ func clear_preview() -> void:
 
 
 func _draw() -> void:
-	var size := Vector2(COLUMNS, ROWS) * CELL_SIZE
-	for y in range(ROWS):
-		var row_box := Rect2(Vector2(0, y * CELL_SIZE), Vector2(size.x, CELL_SIZE))
-		if y in _completed:
-			draw_rect(row_box, Color(0.32, 0.7, 1, 0.10 + _flash * 0.18))
-			draw_line(row_box.position, row_box.position + Vector2(size.x, 0), Color("62baff"), 2)
-		else:
-			draw_line(row_box.position, row_box.position + Vector2(size.x, 0), Color(0.45, 0.7, 0.9, 0.12), 1)
-	for x in range(COLUMNS + 1):
-		draw_line(Vector2(x * CELL_SIZE, 0), Vector2(x * CELL_SIZE, size.y), Color(0.45, 0.7, 0.9, 0.09), 1)
-	draw_line(Vector2(0, size.y), size, Color("75c7ff"), 3)
-	for x in [0.0, size.x]:
-		draw_line(Vector2(x, size.y - 12), Vector2(x, size.y + 6), Color("b7e7ff"), 3)
-	for y in range(ROWS):
-		draw_circle(Vector2(size.x + 12, (y + 0.5) * CELL_SIZE), 3, Color("85d0ff") if y in _completed else Color("34536b"))
 	for cell in _preview:
 		var box := Rect2(Vector2(cell + _preview_cell) * CELL_SIZE, Vector2.ONE * CELL_SIZE)
 		if _preview_valid:

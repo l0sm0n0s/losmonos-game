@@ -1,30 +1,38 @@
 # Los Monos Game
 
-Colección de minijuegos sobre las actividades de un turno de trabajo en **Almacén Los Monos**, creada con Godot 4. El primer nivel combina plataformas y acomodo de paquetes tipo Tetris en una bodega de vista lateral.
+Colección de minijuegos sobre las actividades de un turno de trabajo en **Almacén Los Monos**, creada con Godot 4. El primer nivel combina plataformas y supervivencia ante un brazo robótico que descarga piezas tipo Tetris en una bodega de vista lateral.
 
 ## Cómo jugar
 
 - Camina con `←` / `→` o `A` / `D`.
 - Salta con `Espacio` (también `↑`). Mantén Espacio para un salto alto; suéltalo antes para uno corto.
-- Pulsa `F` junto a un paquete para recogerlo. El contorno claro indica cuál estás seleccionando.
-- Mientras lo llevas, `Q` / `E` giran el grupo de cajas en ambos sentidos.
-- Acércate al lugar de acomodo y mira hacia él. La silueta azul indica una posición válida; la roja indica que no cabe, no tiene apoyo o está fuera de alcance.
-- Pulsa `F` para colocarlo directamente en esa posición. Puedes seguir caminando y saltando con el paquete: no hay un modo de tablero separado.
-- Puedes recoger nuevamente las piezas colocadas, siempre que las restantes conserven una cadena de apoyo hasta el suelo. Si una caja sostiene otras, retira primero las de arriba.
-- Para dejar un paquete a un lado, apunta hacia un espacio libre de recepción y pulsa `F`. Allí vuelve a caer con gravedad.
-- `R` reinicia el nivel; `Esc` regresa al menú. Al completar el nivel, `Enter` o `Espacio` también permiten repetirlo.
+- Pulsa `F` junto a una pieza que haya aterrizado para recogerla. El contorno claro indica cuál estás seleccionando.
+- Mientras la llevas, `Q` / `E` giran el grupo de cajas.
+- Pulsa `F` para soltarla junto al personaje. La silueta azul indica un espacio libre; la roja indica que no cabe. Puedes hacerlo por toda la bodega, incluso mientras saltas; las piezas caen con gravedad.
+- Mueve las piezas y mantén las pilas bajas para despejar el recorrido del brazo. Puedes caminar y saltar sobre las cajas.
+- `R` reinicia; `Esc` regresa al menú. Tras perder, `Enter` o `Espacio` también permiten repetir.
 
-## Actividad 01: orden en altura
+## Actividad 01: sobrevive al turno
 
-Una máquina de poleas se desplaza por el techo y suelta grupos de cuatro cajas en recepción. Los paquetes caen con gravedad y tienen una colisión por cada caja. El mono tiene aceleración, gravedad y salto propios, y puede caminar sobre las pilas, saltarlas y transportar paquetes mientras se mueve.
+El brazo robótico inicia una entrega al comenzar y repite el ciclo cada **5 segundos**. Elige un punto aleatorio a lo ancho de toda la bodega, se desplaza, baja la carga, la suelta y se recoge. Los destinos respetan el ancho de cada pieza y las paredes, pero no evitan las pilas existentes. El intervalo se puede ajustar con `delivery_interval` en el nodo principal (de 3 a 30 segundos).
 
-La zona de acomodo ocupa 20 columnas de la bodega y admite hasta 6 filas de altura. El objetivo es completar **4 filas sin ningún hueco**, de una marca azul del suelo a la otra. Las filas terminadas **no desaparecen**: siguen siendo plataformas para alcanzar el siguiente nivel. Al retirar un paquete se recalculan las filas completas.
+Las entregas usan una bolsa aleatoria de las siete formas I, O, L, J, T, S y Z. No hay un límite de piezas pendientes ni pausas por recepción ocupada. Las piezas descargadas se acumulan y siguen sometidas a gravedad; al quitar una base, las piezas superiores caen.
 
-El acomodo se ajusta a celdas de 32 píxeles junto al personaje. Las piezas necesitan suelo u otra caja como apoyo, no pueden solaparse con el mono ni con otros paquetes y solo se colocan a una altura alcanzable. Es posible rellenar huecos laterales que admitan la forma.
+**Pierdes cuando el brazo o su carga suspendida chocan con una pieza entregada anteriormente**, tanto durante el traslado como durante la bajada, la retirada o la espera. También cuentan las piezas que estás transportando. El personaje no activa esta derrota. Las colisiones se comprueban por caja y a lo largo del movimiento del brazo para evitar que atraviese obstáculos entre fotogramas.
 
-La polea espera si la zona de descarga está ocupada, incluso por el personaje, y limita a dos los paquetes pendientes (incluido el que llevas). Vuelve a entregar cuando despejas recepción. El lote inicial de cuadrados y parejas L/J tiene solución en cuatro filas; después se usa una bolsa aleatoria de las siete formas I, O, L, J, T, S y Z.
+El objetivo es resistir el mayor tiempo posible. El marcador muestra segundos y piezas recibidas; ya no hay victoria por completar filas. Al chocar, se detienen el brazo, las entregas, el personaje y las piezas, y aparece el resultado con la opción de reiniciar.
 
-Este primer nivel no tiene límite de tiempo ni derrota automática por falta de espacio: puedes reorganizar, dejar piezas en recepción o reiniciar. El menú conserva sus acentos azules y el resplandor blanco intermitente detrás del título.
+## Adaptación al monitor
+
+Al iniciar, el juego detecta el área disponible del monitor y abre una ventana centrada que ocupa hasta el 90 % de ese espacio, respetando la barra de tareas. Si mueves la ventana a otro monitor o cambias la resolución, vuelve a ajustarse automáticamente. Puedes redimensionarla manualmente: conserva ese tamaño mientras no cambie el monitor ni su área disponible.
+
+`F11` alterna entre ventana y pantalla completa. El mapa, el menú y los controles escalan juntos conservando la proporción 16:9. En otras proporciones aparecen franjas para mantener todo visible. Las coordenadas del juego siguen siendo 960 × 540, así que la resolución no cambia las físicas ni la dificultad.
+
+### F11 al probar desde el editor
+
+Godot no permite cambiar a pantalla completa cuando el juego está integrado en el editor, incluida la ventana flotante con la barra de herramientas de Game. Para probar F11, detén la partida, abre la pestaña **Game/Juego**, abre el menú de la esquina superior derecha y desactiva **Embed Game on Next Play**. Vuelve a ejecutar y haz clic dentro del juego antes de pulsar F11. En teclados que reservan las teclas de función para controles multimedia puede hacer falta `Fn + F11`.
+
+Esta limitación del editor está documentada en [Game embedding](https://docs.godotengine.org/en/4.7/tutorials/editor/game_embedding.html). El juego ejecutado en una ventana independiente admite F11 tanto en el menú como durante la partida.
 
 ## Comprobaciones
 
@@ -32,9 +40,11 @@ Con Godot disponible, ejecutar:
 
 ```text
 godot --headless --path . --script res://tests/warehouse_test.gd
+godot --headless --path . --script res://tests/display_test.gd
 ```
 
-La prueba comprueba los giros, límites, apoyos, conservación de filas, caída física de paquetes, recogida, bloqueo y reanudación de la polea, colisiones del personaje, salto sobre cajas, aterrizaje encima de ellas, transporte durante el salto, reorganización, partida completa, reinicio, navegación y neón del menú.
+La prueba comprueba destinos en todo el mapa, límites de las piezas, entregas periódicas sin el límite anterior, caída física, choques del brazo en sus distintas fases, ausencia de entregas tras perder, transporte, giros, colocación, salto sobre cajas, eliminación de la victoria por filas, reinicio, navegación y neón del menú.
+La prueba de pantalla verifica resoluciones pequeñas, Full HD, QHD, 4K, ultrapanorámicas y verticales. Ejecutada sin `--headless`, también comprueba el monitor real, el redimensionamiento manual y la entrada y salida de pantalla completa mediante eventos de F11 en el menú y durante la partida.
 
 ## Tipografías
 

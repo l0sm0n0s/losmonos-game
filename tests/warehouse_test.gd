@@ -90,6 +90,7 @@ func _new_game() -> Node2D:
 	var game := MAIN.instantiate() as Node2D
 	game._machine_busy = true
 	root.add_child(game)
+	game.spawn_timer.stop()
 	return game
 
 
@@ -105,62 +106,77 @@ func _give_piece(game: Node, kind: int, serial: int, turns: int = 0) -> Package:
 
 
 func _check_crane_safety() -> void:
-	var game := MAIN.instantiate() as Node2D
-	root.add_child(game)
-	game.player.position = Vector2(136, 432)
-	await _frames(120)
-	_check(game._spawned == 0, "The crane must not start a delivery over the worker")
-	game.player.position = Vector2(232, 432)
-	for _attempt in range(60):
-		if game._machine_busy:
-			break
-		await _frames(1)
-	_check(game._machine_busy, "The crane must resume when the worker leaves reception")
-	game.player.position = Vector2(136, 432)
-	await _frames(120)
-	_check(game._spawned == 0, "The crane must also recheck safety just before releasing")
-	game.player.position = Vector2(232, 432)
-	await _frames(100)
-	_check(game._spawned == 1, "The suspended load must release after the worker moves away")
-	game.queue_free()
-	await process_frame
+	for phase in ["travel", "lower", "retract", "idle"]:
+		var game := _new_game()
+		await _frames(2)
+		game.crane.trolley_x = 160
+		game.crane.start_delivery(800, 1, game._crane_space_clear)
+		if phase == "lower":
+			await _frames(86)
+		elif phase == "retract" or phase == "idle":
+			await _frames(135 if phase == "retract" else 168)
+		var obstacle := PACKAGE_SCENE.instantiate() as Package
+		game.packages.add_child(obstacle)
+		obstacle.setup(1, 99, Vector2.ZERO)
+		# Travel tests sweep over a box in a single deliberately slow tick.
+		var location := Vector2(470, 145) if phase == "travel" else Vector2(792, 125 + game.crane.rope_length)
+		obstacle.place_at(location, Vector2i(-1, -1))
+		game.crane._physics_process(1.0 if phase == "travel" else 0.02)
+		_check(game.mode == game.Mode.FINISHED, "Crane contact must lose during " + phase)
+		_check(game.result_overlay.visible, "Collision must show the loss overlay")
+		_check(game.spawn_timer.is_stopped() and not game.player.is_physics_processing(), "Loss must stop the timer and player")
+		_check(not game.crane.is_physics_processing(), "Loss must freeze the crane")
+		var count: int = game._spawned
+		game._feed_next_package()
+		await _frames(180)
+		_check(game._spawned == count, "No late delivery may appear after a collision")
+		game.queue_free()
+		await process_frame
 
 
 func _check_delivery() -> void:
+	seed(12345)
 	var game := MAIN.instantiate() as Node2D
 	root.add_child(game)
+	var destinations := {}
+	for kind in range(7):
+		for _sample in range(40):
+			var x: float = game._delivery_target(kind)
+			var half_width := Shapes.bounds(Shapes.cells(kind)).x * 16.0
+			_check(x - half_width >= 16 and x + half_width <= 944, "All deliveries must fit within the map")
+			destinations[int(x / 200)] = true
+	_check(destinations.size() == 5, "Random destinations must cover the whole warehouse")
 	for _attempt in range(180):
 		if game._spawned == 1:
 			break
 		await _frames(1)
-	_check(game._spawned == 1, "Ceiling crane must release a package")
+	_check(game._spawned == 1, "The crane must release its first package")
 	if game.packages.get_child_count() == 0:
 		game.queue_free()
 		await process_frame
 		return
 	var first: Package = game.packages.get_child(0)
-	_check(first.state == Package.State.FALLING and not first.is_available(), "Airborne deliveries cannot be picked up")
+	_check(first.state == Package.State.FALLING, "New deliveries must fall under gravity")
+	var previous_release: float = game.survival_time
 	var released_y := first.position.y
 	await _frames(10)
-	_check(first.position.y > released_y, "Packages must fall with gravity")
-	await _frames(65)
-	_check(first.state == Package.State.READY, "Delivery must land on the physical floor")
-	_check(absf(first.position.y + 64 - 432) < 1, "The landed package must not sink into the floor")
-	await _frames(260)
-	_check(game._spawned == 1, "An occupied delivery zone must pause the machine")
-	game.player.position = Vector2(212, 432)
-	game.player.facing = -1
-	_key(game, KEY_F)
-	_check(game._carried == first and first.collision_layer == 0, "F must pick up a nearby package and release its collisions")
-	_check(game.player.is_physics_processing(), "Carrying must not freeze movement")
-	_check(game.player.carrying, "Picking up must enable the raised-arm carrying pose")
-	game.player.position = Vector2(232, 432)
-	game.player.facing = 1
-	_key(game, KEY_F)
-	_check(first.state == Package.State.PLACED and game._carried == null, "F must place directly into the warehouse")
-	_check(not game.player.carrying, "Placing must release the carrying pose")
-	await _frames(260)
-	_check(game._spawned == 2, "Clearing reception must resume deliveries")
+	_check(first.position.y > released_y, "A released package must move down")
+	await _frames(70)
+	_check(first.state == Package.State.READY, "A delivery must settle on the floor")
+	_check(game.mode == game.Mode.WALKING, "The crane must not collide with its own newly released load")
+	# Preserve old deliveries along the floor; the former two-piece cap must not apply.
+	for expected in range(2, 5):
+		first.position = Vector2(40, 368)
+		for _attempt in range(330):
+			if game._spawned >= expected or game.mode == game.Mode.FINISHED:
+				break
+			await _frames(1)
+		_check(game._spawned == expected, "Periodic deliveries must continue past two waiting packages")
+		_check(absf(game.survival_time - previous_release - game.delivery_interval) < 0.15, "Releases must stay five seconds apart")
+		previous_release = game.survival_time
+		if game._spawned >= expected:
+			first = game.packages.get_child(expected - 1)
+	_check(game.survival_time > 15, "The survival clock must keep advancing")
 	game.queue_free()
 	await process_frame
 
@@ -209,7 +225,7 @@ func _check_player_physics() -> void:
 	_check(carried.position.distance_to(game.player.carry_point.global_position) < 90, "Carried artwork must follow the monkey")
 	await _frames(65)
 	_check(game.player.is_on_floor(), "Carrying cannot disable landing or gravity")
-	_check(block.state == Package.State.PLACED and block.collision_layer == 2, "The obstacle must remain in the scene after jumping")
+	_check(block.state == Package.State.READY and block.collision_layer == 2, "The obstacle must remain in the scene after jumping")
 	game.queue_free()
 	await process_frame
 	await _check_tall_stack_jump()
@@ -222,7 +238,7 @@ func _check_tall_stack_jump() -> void:
 	game.player.position = Vector2(232, 432)
 	game.player.facing = 1
 	game._place_carried()
-	_check(tower.state == Package.State.PLACED, "A vertical I piece must fit on the floor")
+	_check(tower.state == Package.State.FALLING, "A vertical I piece must fit on the floor")
 	await _frames(4)
 	Input.action_press("ui_right")
 	Input.action_press("ui_accept")
@@ -252,46 +268,36 @@ func _check_placement() -> void:
 	game.player.position = Vector2(232, 432)
 	game.player.facing = 1
 	_key(game, KEY_F)
-	_check(package.state == Package.State.PLACED and package._shapes.size() == 4, "Placed tetrominoes need four matching physical cells")
+	_check(package.state == Package.State.FALLING and package._shapes.size() == 4, "Placed tetrominoes need four matching physical cells")
+	await _frames(4)
 	game.player.position = Vector2(232, 432)
 	_key(game, KEY_F)
-	_check(game._carried == package and game.board.grid[5][0] == 0, "Placed packages can be picked up and reorganized")
+	_check(game._carried == package, "Placed packages can be picked up and reorganized")
 	game.player.position = Vector2(224, 432)
 	game.player.facing = -1
 	_key(game, KEY_F)
 	await _frames(8)
 	_check(package.state == Package.State.READY and game._carried == null, "A carried package can be set aside in reception")
-	_check(not game._reception_clear(), "Set-aside packages must stop new deliveries")
+	_check(game.mode == game.Mode.WALKING, "Setting a piece aside must not end the game")
 	game.queue_free()
 	await process_frame
 
 
 func _check_full_level() -> void:
 	var game := _new_game()
-	var columns := [0, 2, 4, 6, 8, 8, 10, 10, 12, 14, 16, 18, 0, 2, 4, 6, 12, 14, 16, 18]
-	for index in range(columns.size()):
-		var kind: int = game.INTRO_LOT[index]
-		var turns := 2 if index in [5, 7] else 0
-		var package := _give_piece(game, kind, index + 1, turns)
-		var width := Shapes.bounds(package.cells()).x
-		var neighbor: int = columns[index] + width
-		var feet := 432.0
-		if neighbor < Grid.COLUMNS:
-			for row in range(Grid.ROWS):
-				if game.board.grid[row][neighbor] != 0:
-					feet = game.board.position.y + row * Grid.CELL_SIZE
-					break
-		game.player.position = Vector2(game.board.position.x + neighbor * Grid.CELL_SIZE + 24, feet)
-		game.player.facing = -1
-		game._place_carried()
-		_check(package.state == Package.State.PLACED, "Opening lot placement %d must fit" % (index + 1))
-		for cell_index in range(package.cells().size()):
-			_check(package._shapes[cell_index].position == (Vector2(package.cells()[cell_index]) + Vector2.ONE * 0.5) * 32, "Collision cells must match the rotated package")
-		_check(game.player.is_physics_processing() or index == columns.size() - 1, "Arrangement must keep live platformer controls")
-	_check(game.rows_completed == 4, "The opening lot must be solvable as four complete rows")
-	_check(game.mode == game.Mode.FINISHED and game.result_overlay.visible, "Four rows must show the victory screen")
-	_check(game.packages.get_child_count() == 20, "Completed rows cannot delete the warehouse platforms")
-	_check(game.spawn_timer.is_stopped() and not game.player.is_physics_processing(), "Victory must stop deliveries and movement")
+	await _frames(3)
+	# Completing the old four-row objective must no longer finish the game.
+	for row in [4, 2]:
+		for column in range(0, Grid.COLUMNS, 2):
+			game.board.place(Shapes.cells(1), column, row, row * 20 + column + 1)
+	game._update_counter()
+	_check(game.board.completed_rows() == 4 and game.mode == game.Mode.WALKING, "Four full rows must not trigger victory")
+	var carried := _give_piece(game, 1, 100)
+	await _frames(2)
+	var visible_box: Rect2 = carried.world_cells()[0]
+	_check(is_equal_approx(visible_box.size.x, 32 * carried.scale.x), "Carried collision checks must match the visible scaled piece")
+	var contact_boxes: Array[Rect2] = [visible_box]
+	_check(not game._crane_space_clear(contact_boxes), "Previously delivered pieces must still count when carried")
 	game.queue_free()
 	await process_frame
 
@@ -307,7 +313,7 @@ func _check_navigation() -> void:
 	_key(current_scene, KEY_R)
 	await process_frame
 	await process_frame
-	_check(current_scene.get_instance_id() != previous_id and current_scene.rows_completed == 0, "R must restart with an empty warehouse")
+	_check(current_scene.get_instance_id() != previous_id and current_scene._spawned == 0, "R must restart with an empty warehouse")
 	var cancel := InputEventAction.new()
 	cancel.action = "ui_cancel"
 	cancel.pressed = true

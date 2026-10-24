@@ -81,7 +81,7 @@ func drop_at(world_position: Vector2) -> void:
 func world_cells() -> Array[Rect2]:
 	var result: Array[Rect2] = []
 	for cell in cells():
-		result.append(Rect2(global_position + Vector2(cell) * CELL_SIZE, Vector2.ONE * CELL_SIZE))
+		result.append(Rect2(global_position + Vector2(cell) * CELL_SIZE * scale, Vector2.ONE * CELL_SIZE * scale))
 	return result
 
 

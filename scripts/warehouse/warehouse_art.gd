@@ -28,13 +28,6 @@ func _draw() -> void:
 	for x in [32, 240, 912]:
 		draw_rect(Rect2(x, 85, 8, 347), Color("2d4b62"))
 		draw_line(Vector2(x, 85), Vector2(x, 432), Color("406987"), 1)
-	# Loading bay and the storage lanes share the same physical floor.
-	draw_rect(Rect2(64, 226, 144, 206), Color("152939"))
-	for y in range(234, 430, 13):
-		draw_line(Vector2(68, y), Vector2(204, y), Color("263d4f"), 2)
-	draw_rect(Rect2(56, 414, 160, 18), Color("286499"))
-	for x in range(58, 212, 16):
-		draw_line(Vector2(x, 416), Vector2(x + 10, 429), Color("74b4e4"), 3)
 	draw_rect(Rect2(16, 434, 928, 26), Color("2b4559"))
 	draw_line(Vector2(16, 434), Vector2(944, 434), Color("589bcc"), 3)
 	for x in range(24, 940, 48):
